@@ -6,14 +6,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { authValidate } from 'src/utils/middleware/auth.validate';
 import { Repository } from 'typeorm';
-import { UserEntitie } from '../users/entities/user.entity';
-import { UpdateUserDto } from './dto/update.user.dto';
+import { UserEntitie } from '../../domain/entities/user.entity';
+import { UpdateUserDto } from '../../interfaces/adapters/dto/update.user.dto';
 import * as bcrypt from 'bcrypt';
-import { CreateUserDto } from './dto/create.user.dto';
-import { LoginUserDto } from './dto/login.user.dto';
-import { SECRET } from 'src/utils/constats';
+import { CreateUserDto } from '../../interfaces/adapters/dto/create.user.dto';
+import { LoginUserDto } from '../../interfaces/adapters/dto/login.user.dto';
+import { SECRET } from 'src/infrastructure/constants/constants';
 import { sign } from 'jsonwebtoken';
 
 @Injectable()
@@ -44,7 +43,6 @@ export class UsersService {
       where: { email: dto.email },
     });
 
-    console.log(userFound);
     if (!userFound || !bcrypt.compareSync(dto.password, userFound[0].password))
       throw new UnauthorizedException('Incorrect user email or password');
 
@@ -68,9 +66,8 @@ export class UsersService {
     return this.userReporitory.find({ relations: { products: true } });
   }
 
-  async update(dto: UpdateUserDto, token: string) {
-    const validate = await authValidate(token);
-    const { id } = validate;
+  async update(decoded, dto: UpdateUserDto) {
+    const { id } = decoded;
 
     const user = await this.userReporitory.preload({
       id: +id,
@@ -91,9 +88,8 @@ export class UsersService {
     return this.userReporitory.delete(id);
   }
 
-  remove(token: string) {
-    const validate = authValidate(token);
-    const { id } = validate;
+  remove(decoded) {
+    const { id } = decoded;
 
     const user = this.userReporitory.find({
       where: { id: id },

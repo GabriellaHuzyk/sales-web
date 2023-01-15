@@ -1,10 +1,9 @@
-import { ProductEntitie } from 'src/products/entities/products.entity';
+import { ProductEntitie } from 'src/domain/entities/products.entity';
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
   OneToMany,
-  JoinTable,
 } from 'typeorm';
 
 @Entity('users')
@@ -31,7 +30,7 @@ export class UserEntitie {
   phone_number: string;
 
   @Column()
-  store_visibel: boolean;
+  store_visible: boolean;
 
   @OneToMany(() => ProductEntitie, (products) => products.user)
   products: ProductEntitie[];

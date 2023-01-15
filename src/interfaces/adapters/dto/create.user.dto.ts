@@ -20,5 +20,5 @@ export class CreateUserDto {
   readonly phone_number: string;
 
   @IsBoolean()
-  readonly store_visibel: boolean;
+  readonly store_visible: boolean;
 }

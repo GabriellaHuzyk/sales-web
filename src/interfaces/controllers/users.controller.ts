@@ -3,35 +3,33 @@ import {
   Controller,
   Delete,
   Get,
-  Header,
   Headers,
-  HttpCode,
-  HttpStatus,
   Param,
   Patch,
   Post,
+  Req,
   Res,
 } from '@nestjs/common';
-import { authValidate } from 'src/utils/middleware/auth.validate';
-import { CreateUserDto } from './dto/create.user.dto';
-import { LoginUserDto } from './dto/login.user.dto';
-import { UpdateUserDto } from './dto/update.user.dto';
-import { UsersService } from './users.service';
+import { CreateUserDto } from '../adapters/dto/create.user.dto';
+import { LoginUserDto } from '../adapters/dto/login.user.dto';
+import { UpdateUserDto } from '../adapters/dto/update.user.dto';
+import { UsersService } from '../../app/users/users.service';
+import { Request, Response } from 'express';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post('register')
-  async register(@Body() createUserDto: CreateUserDto, @Res() res) {
-    await this.usersService.register(createUserDto);
+  async register(@Body() body: CreateUserDto, @Res() res) {
+    await this.usersService.register(body);
 
     return res.status(200).json({ success: true, message: 'User created!' });
   }
 
   @Post('auth')
-  auth(@Body() loginUserDto: LoginUserDto) {
-    return this.usersService.auth(loginUserDto);
+  auth(@Body() body: LoginUserDto) {
+    return this.usersService.auth(body);
   }
 
   @Get('intern')
@@ -48,22 +46,23 @@ export class UsersController {
   async update(
     @Headers('authorization') auth: string,
     @Body() dto: UpdateUserDto,
-    @Res() res,
+    @Req() req: Request,
+    @Res() res: Response,
   ) {
-    await this.usersService.update(dto, auth);
+    await this.usersService.update(req.headers.user, dto);
 
     return res.status(200).json({ success: true, message: 'User updated!' });
   }
 
   @Delete('intern/:id')
-  deleteAnyUser(@Param('id') id: string, @Res() res) {
+  deleteAnyUser(@Param('id') id: string, @Res() res: Response) {
     this.usersService.removeAnyUser(Number(id));
 
     return res.status(200).json({ success: true, message: 'User removed!' });
   }
 
   @Delete()
-  delete(@Headers('authorization') auth: string, @Res() res) {
+  delete(@Headers('authorization') auth: string, @Res() res: Response) {
     this.usersService.remove(auth);
 
     return res.status(200).json({ success: true, message: 'User removed!' });
